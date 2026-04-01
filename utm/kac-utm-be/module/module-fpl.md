@@ -101,7 +101,50 @@ PK: fplNo (비행계획 번호)
 
 ---
 
+## 비행계획 검증 로직 (Engine에서 실행)
+
+### 공역 충돌 검사
+
+```
+1. 비행영역 좌표 → JTS Geometry 변환
+   - RlmType.POINT → Point + Buffer
+   - RlmType.POLYGON → Polygon
+   - RlmType.CIRCLE → Point + Buffer(반지름)
+   
+2. 완충거리(Buffer) 적용 → 다각형 생성
+
+3. getViolatedCmptncInstSpaces()
+   - STRtree 공간 인덱스로 교차 공역 검색
+   - 비행영역 Geometry vs 관제권 Geometry 교차 판정
+   - 충돌 영역별 FplRlmCmptncInstModel 생성
+   - 검토 상태: WAIT (검토대기)
+
+4. GeoJSON 형식으로 변환 및 저장
+```
+
+### 비행 중단(ITRP) 상태 흐름
+
+```
+RCPT(접수) → CNFM(확인) → PRCS(처리) → PRCD(완료)
+     └── CNLRQ(취소요청) → CNCL(취소)
+
+규칙:
+- RCPT 상태에서만 취소 가능
+- 이미 확인된 중단은 취소 불가 (SOL_ITRP_CNCL_ALREADY_CONFIRM)
+```
+
+### 기체 등록 중복 검사 규칙
+
+| 필드 | 에러 코드 | 설명 |
+|------|----------|------|
+| 식별번호 (idntfNo) | WEB_DUPLICATED_IDNTF_NO | 기체 식별번호 중복 |
+| 신고번호 (dclrNo) | WEB_DUPLICATED_DCLR_NO | 신고번호 중복 |
+| 제조번호 (fbctnNo) | WEB_DUPLICATED_FBCTN_NO | 제조번호 중복 |
+
+---
+
 ## 관련 문서
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[module-gsl]] - 공역 정보 (비행 구간 검증 시 사용)
 - [[module-psty]] - 관제 (비행 중 감시)
 - [[module-dos]] - DOS 비행계획 (유사 구조)

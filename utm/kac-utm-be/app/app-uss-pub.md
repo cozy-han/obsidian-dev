@@ -93,8 +93,68 @@ com.kac.utm.uss/
 
 ---
 
+## API 엔드포인트 상세
+
+### USS 비행계획 (`/api/v1/web/fpl/bsc`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `` | 비행계획서 추가 |
+| GET | `/plist` | 비행계획서 조회 (페이징) |
+| GET | `/{fplNo}` | 비행계획서 상세 |
+| GET | `/schedule` | 비행 스케줄 조회 |
+| GET | `/live/by/userNo` | 실시간 비행영역/기체 |
+
+### ★ Inter-USS API (`/utm`) - 외부 USS 연동
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/ussapi/v1/fpl/approval` | 비행계획 승인 요청 (인바운드) |
+| POST | `/ussapi/v1/fpl/callback` | 비행계획 승인 비동기 응답 |
+| POST | `/openapi/v1/fpl/retrieveTotal` | 비행계획 통합 조회 |
+| POST | `/openapi/v1/fpl/retrieveDetail` | 비행계획 상세 조회 |
+| POST | `/ussapi/v1/fpl/registry` | 비행계획 보고(제출) |
+| POST | `/ussapi/v1/fpl/updateStatus` | 비행계획 상태 업데이트 |
+
+> Inter-USS API는 Bearer Token 인증 사용. 토큰에서 사용자 ID 추출하여 권한 검증.
+
+### USS 관제 (`/api/v1/web/psty/ctrl`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/plist` | 관제 이력 (페이징) |
+| GET | `/live/list` | 실시간 드론 비행현황 |
+| GET | `/live/acr/dtl` | 실시간 기체 상세 |
+| GET | `/smlt/stream/{fplNo}` | 시뮬레이션 SSE 스트리밍 |
+
+---
+
+## Inter-USS 비즈니스 로직
+
+### 비행계획 승인 요청 흐름 (`aprvFpl`)
+1. 외부 USS가 `POST /utm/ussapi/v1/fpl/approval` 호출
+2. Bearer Token 검증 → 사용자 ID 추출
+3. 필수 파라미터 검증 (uasFlightPlanId, Version, Type 등)
+4. 비행 허가 ID 자동 생성 (UasFlightAuthorizationId)
+5. FplBase + FplExtra 데이터 UssStorage에 저장
+6. 승인 상태 반환 (resultCd: "01")
+
+### SWIM 연동 (WebClient 기반)
+```
+SwimClient.send(body, SwimEndpoint)
+→ FIXM XML 프로토콜로 항공교통 데이터 교환
+→ prod: http://10.10.130.15:9500
+```
+
+### RabbitMQ 소비자
+- **큐**: `q_smatii_rnd` (USS용 드론 항적)
+- **처리**: SmatiiRq → GpModel 변환 → 관제 이력 저장
+
+---
+
 ## 관련 문서
 - [[00_프로젝트 개요]] - 전체 아키텍처
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[app-uss-ws]] - USS WebSocket (실시간 데이터)
 - [[module-fpl]] - 비행계획 도메인
 - [[module-psty]] - 관제 도메인

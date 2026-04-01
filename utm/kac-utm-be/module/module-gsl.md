@@ -65,7 +65,46 @@ private Geometry aspGeom;  // 공역의 기하학적 형상 (폴리곤 등)
 
 ---
 
+## 공간 연산 로직 (Engine GslAirspaceService)
+
+### 공역 조회 흐름
+
+```
+1. 입력 좌표 리스트 수신
+2. RlmType별 Geometry 생성
+   - POINT: Point + Buffer
+   - POLYGON: 다각형
+   - CIRCLE: Point + Buffer(반지름)
+3. STRtree 공간 인덱스로 교차 공역 검색
+4. Feature 정보 반환:
+   - 공역명, 그룹명, 설명, 유형
+   - 고도 범위 (lowElev, highElev)
+   - GeoJSON 기하정보
+```
+
+### 관제권 검증 (`isValidControl`)
+
+```
+1. 기하정보 문자열 역직렬화
+2. STRtree 쿼리로 교차 Feature 검색
+3. AirspaceType.ControlYn 플래그 확인
+4. 반환: Boolean (관제 대상 여부)
+```
+
+### 사용하는 공간 라이브러리
+
+| 라이브러리 | 용도 |
+|-----------|------|
+| JTS Core | Geometry 생성, 교차 판정, Buffer 연산 |
+| GeoTools | GeoJSON 변환, 좌표계 변환 |
+| STRtree | 공간 인덱스 (빠른 교차 검색) |
+| Hibernate Spatial | MySQL 공간 칼럼 매핑 |
+| Proj4J | 좌표 변환 (WGS84 등) |
+
+---
+
 ## 관련 문서
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[module-fpl]] - 비행계획 (공역 검증에 GSL 사용)
 - [[app-engine]] - 공간 연산 처리
 - [[common-모듈정리]] - GeoTools 유틸리티

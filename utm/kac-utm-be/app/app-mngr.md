@@ -82,8 +82,71 @@ com.kac.utm.mngr/
 
 ---
 
+## API 엔드포인트 상세
+
+### 관리자 인증 (`/api/v1/mngr/common/authrt`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/login` | 관리자 로그인 |
+| GET | `/logout` | 로그아웃 |
+| POST | `/sign-up` | 관리자 회원가입 |
+| POST | `/valid/user` | 중복 체크 |
+| POST | `/cert/send/no` | 인증번호 전송 |
+| POST | `/cert/valid/no` | 인증번호 확인 |
+| GET | `/refresh` | 토큰 갱신 |
+| GET | `/profile` | 프로필 조회 |
+
+### 사용자 관리 (`/api/v1/mngr/common/user`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/plist` | 전체 회원 목록 |
+| PATCH | `/reset-pswd` | 비밀번호 초기화 (→ kacutm12!@) |
+| PATCH | `/ent/aprv` | 기업 담당자 신청 승인/반려 |
+| GET | `/inactive/plist` | 휴면 회원 목록 |
+| PATCH | `/inactive/chg-status` | 휴면 해제 |
+| DELETE | `/inactive` | 휴면 회원 탈퇴 |
+| GET | `/stng` | 회원가입 정책 조회 |
+| PUT | `/stng` | 사이트 설정 수정 |
+
+### 관리자 계정 (`/api/v1/mngr/common/mngr`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST/PUT/DELETE | `` | 관리자 CRUD |
+| PATCH | `/reset-pswd` | 비밀번호 초기화 |
+| GET | `/plist` | 관리자 목록 |
+| GET | `/lgn/hstry/plist` | 접속 로그 |
+| GET | `/use/hstry/plist` | 이용 로그 |
+
+### 공통 코드 (`/api/v1/mngr/common/code`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST/PUT/DELETE | `/group` | 코드 그룹 CRUD |
+| POST/PUT/DELETE | `` | 코드 CRUD |
+
+### ACL (`/api/v1/mngr/common/acl`) - 접속 IP 관리
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/aply` | IP 접근 신청 |
+| POST/PUT/DELETE | `` | 접속 IP CRUD |
+
+### 배치 관리 (`/api/v1/mngr/batch`) → BatchClient 호출
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/job/list` | Job 상세 목록 |
+| PUT | `/trigger/cron` | Cron 스케줄 변경 |
+| POST | `/job/run/{jobNm}` | Job 즉시 실행 |
+
+---
+
 ## 관련 문서
 - [[00_프로젝트 개요]] - 전체 아키텍처
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[app-web]] - 일반 사용자 포털
 - [[app-batch]] - 배치 모듈
 - [[module-common]] - 공통 도메인

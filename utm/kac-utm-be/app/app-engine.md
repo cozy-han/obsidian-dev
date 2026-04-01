@@ -97,8 +97,109 @@ com.kac.utm.engine/
 
 ---
 
+## API 엔드포인트 상세
+
+### 비행계획 (`/api/v1/engine/fpl`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `` | 비행계획서 생성 (공역 충돌 검사 포함) |
+| GET | `/list` | 비행계획서 풀 데이터 조회 |
+| GET | `/plist` | 비행계획서 페이징 조회 |
+| GET | `/{fplNo}` | 비행계획서 상세 |
+| GET | `/by/idntfNo` | 식별번호별 비행영역 조회 |
+| GET | `/live/by/userNo` | 사용자별 실시간 비행영역 |
+| GET | `/schedule/list` | 스케줄 목록 |
+| PUT | `/prgrs` | 비행계획 진행상태 변경 |
+| GET | `/mngr/plist` | 관리자 자동비행승인 관리 |
+| GET | `/ws/refresh/event` | WebSocket 이벤트 갱신 |
+| DELETE | `/ctrl` | Redis 관제 데이터 삭제 |
+
+### 기체 (`/api/v1/engine/fpl/acr`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `` | 기체 추가 (중복검사: 식별/신고/제조번호) |
+| PUT | `` | 기체 수정 |
+| DELETE | `` | 기체 삭제 |
+| GET | `/by/idntfNo` | 식별번호별 기체 조회 |
+| GET | `/load/ts` | KOTSA TS 기체정보 불러오기 |
+
+### 비행 허가 (`/api/v1/engine/fpl/prmsn`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| PUT | `/aprv` | 허가 승인 |
+| PUT | `/unaprv` | 허가 미승인 |
+| PUT | `/request` | 허가 요청 전송 |
+| POST | `/setting` | 허가 설정 추가 |
+
+### 관제 (`/api/v1/engine/psty/ctrl`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/crt/id` | ★ 관제 ID 발급 (비행계획 매칭, 허가 확인) |
+| GET | `/plist` | 비행 이력 목록 |
+| GET | `/live/acr/dtl` | 실시간 기체 상세 |
+| PUT | `/end` | 관제 종료 |
+
+### 비정상 상황 (`/api/v1/engine/psty/abn`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/plist` | 비정상 상황 조회 |
+| POST | `/live/list` | 실시간 비정상상황 건수 |
+
+### 공역 (`/api/v1/engine/gsl/airspace`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/list` | 좌표 기반 공역 조회 |
+| POST | `/all/list` | 전체 공역 조회 |
+| POST | `/notam/list` | NOTAM 조회 |
+| POST | `/valid/control` | 영역 관제권 유효성 확인 |
+
+---
+
+## 핵심 비즈니스 로직 상세
+
+### 비행계획 생성 (`FplBscService.crtFpl()`)
+```
+1. 비행계획 기본정보 저장
+2. 비행영역(RLM) 좌표 → JTS Geometry 변환
+   - RlmType: POINT, POLYGON, CIRCLE
+   - Buffer(완충거리) 적용 → 다각형 생성
+   - GeoJSON 변환 및 저장
+3. ★ 공역 충돌 검사 ★
+   getViolatedCmptncInstSpaces()
+   - 비행영역 Geometry vs 관제권 Geometry 교차 판정
+   - STRtree 공간 인덱스 사용
+   - 충돌 영역별 검토대기(WAIT) 항목 생성
+4. 조종사/기체 정보 저장
+5. 동적 스케줄러 등록 (비행 시작/종료 시간)
+```
+
+### 관제 ID 발급 (`PstyCtrlService.crtId()`)
+```
+1. 관제 번호 생성
+2. 식별번호 → 비행계획 매칭 (validYn)
+3. 동시 비행 기체 확인
+   - GENERAL/ETC: 기존 메인 관제번호 설정
+   - ILLEGAL: 불법드론 → 캐시 제거, WebSocket 중단
+4. 허가 여부 확인 (prmsnYn)
+5. 관제 상태 코드 반환 (START, GROUND 등)
+```
+
+### 기체 등록 중복 검사
+- 식별번호(idntfNo) 중복 → `WEB_DUPLICATED_IDNTF_NO`
+- 신고번호(dclrNo) 중복 → `WEB_DUPLICATED_DCLR_NO`
+- 제조번호(fbctnNo) 중복 → `WEB_DUPLICATED_FBCTN_NO`
+
+---
+
 ## 관련 문서
 - [[00_프로젝트 개요]] - 전체 아키텍처
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[app-ws]] - WebSocket (실시간 데이터 전달)
 - [[module-fpl]] - 비행계획 도메인
 - [[module-gsl]] - 공간정보 도메인

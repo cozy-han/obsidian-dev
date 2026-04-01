@@ -87,7 +87,55 @@ com.kac.utm.batch/
 
 ---
 
+## 배치 Job 상세
+
+### CtrlEndBatchService (관제 종료)
+```
+1. 처리 상태 'R' (Running)인 관제 데이터 조회
+2. 마지막 이력 생성 시간으로부터 경과 시간 계산
+3. 경과 > GP_END_TIME (기본 1분) 이면:
+   - 관제 상태 → END
+   - 총 비행시간 계산 (시작~종료 시간 차이)
+   - 총 비행거리 계산 (Haversine 공식, 5000건 청크)
+   - Redis 비정상 상황 데이터 삭제
+4. 에러 시 처리 상태 → 'F'
+```
+
+### CtrlRgnBatchService (관제 지역)
+```
+1. 처리 상태 'R'인 관제 지역 데이터 조회
+2. 좌표(위도/경도) → 행정구역 변환 (VWorld API)
+   - 도/광역시, 시/군/구, 읍/면/동
+   - 우편번호, 도로명 주소
+3. 처리 상태 → 'S' (성공) 또는 'F' (실패)
+```
+
+### StatsAbnSitBatchService (이상상황 통계)
+```
+- Chunk 기반 배치 (ChunkSize: 1000)
+- 스케줄: 매일 자정 (cron: "0 0 0 * * ?")
+- Reader → Processor → Writer 패턴
+```
+
+### 사용자 관리 배치
+- **del**: 삭제 대상 사용자 처리
+- **drmc**: 장기 미접속 사용자 휴면 처리
+- **whdwl**: 탈퇴 요청 사용자 처리
+
+### Quartz API (`/api/v1/batch/quartz`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/job/run/{jobNm}` | Job 즉시 실행 |
+| PUT | `/trigger/cron` | Cron 스케줄 변경 |
+| GET | `/job/details` | Job/Trigger 상세 조회 |
+| GET | `/job/names` | 모든 Job Name |
+| GET | `/trigger/names` | 모든 Trigger Name |
+
+---
+
 ## 관련 문서
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[app-mngr]] - 관리자 포털 (배치 관리 UI)
 - [[module-stats]] - 통계 도메인
 - [[module-psty]] - 관제 도메인 (비행 종료 관련)

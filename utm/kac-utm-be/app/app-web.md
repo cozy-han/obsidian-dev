@@ -112,8 +112,150 @@ com.kac.utm.web/
 
 ---
 
+## API 엔드포인트 상세
+
+### 인증/사용자 (`/api/v1/web/authrt`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/login` | 로그인 → WebLgnRs (토큰 발급) |
+| POST | `/login/mobile/sns` | 모바일 SNS 로그인 (카카오/네이버) |
+| GET | `/logout` | 로그아웃 |
+| POST | `/sign-up` | 회원가입 |
+| DELETE | `/whdwl` | 회원탈퇴 |
+| POST | `/valid/user` | 중복 체크 (ID, 전화번호, 이메일, 사업자번호) |
+| POST | `/valid/pswd` | 비밀번호 검증 |
+| GET | `/refresh` | Access Token 갱신 (Refresh Token 사용) |
+| GET | `/valid/token` | 토큰 유효성 검증 |
+| POST | `/find/id` | 아이디 찾기 |
+| PATCH | `/find/pswd/chg` | 비밀번호 재설정 |
+| POST | `/chg/pswd` | 비밀번호 변경 |
+| POST | `/extend/pswd` | 비밀번호 다음에 변경하기 |
+| GET | `/profile` | 프로필 조회 |
+| PUT | `/upd/info` | 사용자 정보 수정 |
+| PUT | `/upd/mbltelno` | 휴대폰 번호 변경 |
+| GET | `/menu/list` | 메뉴 조회 |
+| POST | `/sns-link` | SNS 연동 |
+| DELETE | `/sns-link` | SNS 연동 해제 |
+| GET | `/mypage/current` | 마이페이지 현황 |
+| GET | `/mypage/hstry` | 마이페이지 이력 |
+| GET | `/mainpage` | 메인페이지 데이터 |
+| PATCH | `/chg-authrt/temp` | 권한(구독) 변경 |
+
+### 비행계획 (`/api/v1/web/fpl/bsc`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `` | 비행계획서 등록 → Engine 호출 |
+| GET | `/plist` | 비행계획서 조회 (페이징) |
+| GET | `/slist` | 비행계획서 조회 (스크롤) |
+| GET | `/{fplNo}` | 비행계획서 상세 |
+| GET | `/schedule` | 비행 스케줄 조회 |
+| GET | `/ofdoc` | 비행계획서 공문 출력 |
+| POST | `/send` | 비행계획서 신청내역 전송 |
+
+### 기체 관리 (`/api/v1/web/fpl/acr`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `` | 기체 등록 (파일 포함) |
+| PUT | `` | 기체 수정 |
+| DELETE | `` | 기체 삭제 |
+| GET | `/plist` | 기체 목록 (페이징) |
+| GET | `/slist` | 기체 목록 (스크롤) |
+| GET | `/hstry/slist` | 기체 변경 이력 |
+| GET | `/load/ts` | TS 기체정보 조회 (KOTSA 연동) |
+
+### 조종사 관리 (`/api/v1/web/fpl/plt`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `/cust` | 고객 조종사 등록 |
+| PUT | `/cust` | 고객 조종사 수정 |
+| DELETE | `/cust` | 고객 조종사 삭제 |
+| GET | `/cust/slist` | 고객 조종사 목록 |
+
+### 비행 허가 (`/api/v1/web/fpl/prmsn`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/plist` | 허가 요청 목록 |
+| GET | `/setting/data` | 허가 설정 데이터 |
+| POST | `/setting` | 허가 설정 추가 |
+| PUT | `/setting` | 허가 설정 수정 |
+| PATCH | `/request` | 허가 요청 전송 |
+
+### 비행 영역 (`/api/v1/web/fpl/rlm`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/list` | 나의 비행 영역 조회 |
+| POST | `` | 영역 저장 |
+| PUT | `` | 영역 수정/삭제 |
+| GET | `/current/prmsn` | 현 시각 비행승인 영역 |
+
+### 관제 (`/api/v1/web/psty/ctrl`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/plist` | 관제 이력 (페이징) |
+| GET | `/live/list` | 실시간 드론 비행현황 |
+| GET | `/live/acr/dtl` | 실시간 기체 상세 |
+| GET | `/live/rlm/{idntfNo}` | 드론 비행계획 영역 |
+| GET | `/smlt/plist` | 비행 시뮬레이션 목록 |
+| GET | `/smlt/stream/{fplNo}` | 시뮬레이션 SSE 스트리밍 |
+
+### 비정상 상황 (`/api/v1/web/psty/abn`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| GET | `/plist` | 비정상 상황 이력 |
+| GET | `/live/list` | 실시간 비정상상황 |
+
+### 사고보고 (`/api/v1/web/psty/acdnt/rpt`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `` | 사고보고 등록 (파일 포함) |
+| PUT | `` | 사고보고 수정 |
+| GET | `/slist` | 사고보고 목록 |
+| POST | `/cncl` | 사고보고 취소 |
+
+### 비행 중단 (`/api/v1/web/fpl/itrp`)
+
+| HTTP | URL | 설명 |
+|------|-----|------|
+| POST | `` | 비행 중단 등록 |
+| PUT | `` | 비행 중단 수정 |
+| GET | `/slist` | 비행 중단 목록 |
+| POST | `/cncl` | 비행 중단 취소 |
+
+---
+
+## 주요 비즈니스 흐름
+
+### 로그인 흐름
+1. `POST /login` → BCrypt 비밀번호 검증
+2. 로그인 실패 5회 시 계정 잠금 (`lgnLckYn`)
+3. 성공 시 JWT Access Token + Refresh Token 발급
+4. 비밀번호 변경 기한 초과 시 변경 안내
+
+### 비행계획 신청 흐름
+1. 사용자가 `POST /api/v1/web/fpl/bsc` 호출
+2. web → `EngineFplClient.crtFpl()` → engine 호출
+3. engine에서 공역 충돌 검사 후 결과 반환
+4. 상태: APPLY → REVIEW → APPROVED/REJECTED
+
+### OAuth2 소셜 로그인
+- 카카오, 네이버 지원
+- `POST /login/mobile/sns` (모바일)
+- SNS 연동/해제 API 별도 제공
+
+---
+
 ## 관련 문서
 - [[00_프로젝트 개요]] - 전체 아키텍처
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[app-mngr]] - 관리자 포털
 - [[module-common]] - 공통 도메인
 - [[module-fpl]] - 비행계획 도메인

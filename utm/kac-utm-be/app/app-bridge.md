@@ -75,7 +75,63 @@ com.kac.utm.bridge/
 
 ---
 
+## 통신 로직 상세
+
+### 불법드론 스캐너 (IllegalClientManager)
+
+```java
+// ConcurrentHashMap으로 클라이언트 관리
+Map<String, BridgeClient> clientMap
+
+// 30초마다 연결 해제된 클라이언트 자동 재연결
+@Scheduled(fixedDelay = 30, timeUnit = SECONDS)
+illegalReconnection() {
+    getDisConnectionClient()  // 연결 해제 클라이언트 필터링
+    → 각 클라이언트 reconnect() 호출
+}
+```
+
+### MQTT 클라이언트 (MqttUtmClient)
+
+```
+클라이언트 ID: "BRIDGE_CLIENT_" + UUID
+QoS: 1 (최소 1회 전송)
+Clean Session: true
+
+send(IllegalInboundSocketModel)
+→ JSON 직렬화
+→ mqttClient.publish(topic, payload, qos=1, retained=false)
+→ Schedulers.boundedElastic() (비동기)
+```
+
+### TCP 클라이언트 (TcpUtmClient)
+
+```
+Serializer: ByteArrayCrLfSerializer
+Keep-Alive: true
+Single Use: false (연결 재사용)
+
+send(IllegalInboundSocketModel)
+→ SocketPayload 변환
+   - AuthKey: "35ea4080-a3f2-4e34-8361-78db06bac6fc"
+   - TerminalId: "ILLEGAL_DRONE"
+   - Command: "ILLEGAL"
+→ JSON 직렬화
+→ TCP 메시지 핸들러 전송 (IOScheduler)
+```
+
+### 데이터 모델
+
+```
+IllegalInboundSocketModel:
+- droneID, droneLat, droneLon
+- droneAltitude, droneSpeed, droneAngle
+```
+
+---
+
 ## 관련 문서
 - [[00_프로젝트 개요]] - 전체 아키텍처
+- [[04_앱간 연관관계]] - 앱 간 통신 상세
 - [[app-ws]] - WebSocket 서버 (데이터 전달 대상)
 - [[03_인프라 및 환경설정]] - MQTT/RabbitMQ 설정
